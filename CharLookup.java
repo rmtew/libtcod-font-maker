@@ -3,7 +3,6 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
-
 public class CharLookup extends JFrame implements ActionListener, ItemListener, MouseMotionListener
 {
 	public static final int TABLE_WIDTH = 31;
@@ -106,42 +105,27 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		setVisible(true);
 	}
 	
-	
 	public void actionPerformed(ActionEvent ae)
 	{
-		if(ae.getSource() == nextB)
-		{
+		if (ae.getSource() == nextB)
 			base += displayed;
-		}
-		
-		if(ae.getSource() == prevB)
-		{
-			base -= displayed;
-		}
-		
-		if(ae.getSource() == jumpB)
-		{
+		else if (ae.getSource() == prevB)
+			base -= displayed;		
+		else if (ae.getSource() == jumpB)
 			getJumpDestination();
-		}
-
-		if(ae.getSource() == exportB)
-		{
+		else if(ae.getSource() == exportB)
 			exportPNG();
-		}
 		
 		update();
 	}
 	
-	public void itemStateChanged(ItemEvent ie)
-	{
+	public void itemStateChanged(ItemEvent ie) {
 		update();
 	}
 	
 	public void mouseDragged(MouseEvent me){}
 	
-	
-	public void mouseMoved(MouseEvent me)
-	{
+	public void mouseMoved(MouseEvent me) {
 		mouseLocX = (me.getX() - OFFSET_X) / SPACING;
 		mouseLocY = (me.getY() - OFFSET_Y) / SPACING;
 		
@@ -149,8 +133,7 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		updateField();
 	}
 	
-	public void updateField()
-	{
+	public void updateField() {
 		if(lockedOutput) return;
 		
 		int curCharIndex = mouseLocX + (mouseLocY * (TABLE_WIDTH - 1)) + base;
@@ -158,11 +141,9 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		
 		locL.setText("Characters " + base + " through " + (base + displayed) + ".\n\n");
 		locL.append(curChar + " = (char)" + curCharIndex);
-	}
+	}	
 	
-	
-	public void update()
-	{
+	public void update() {
 		cornerChar = (char)base;
 		base = (int)cornerChar;
 		
@@ -173,38 +154,33 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 			displayArr[0][y] = "";
 		
 		for(int x = 0; x < TABLE_WIDTH - 1; x++)
-		for(int y = 0; y < TABLE_HEIGHT- 1; y++)
-		{
-			int xVal = x;
-			int yVal = y * (TABLE_WIDTH - 1);
-			char c = (char)(xVal + yVal + base);
-			displayArr[x+1][y+1] = "" + c;
-		}
-		
-		updateField();
-		
+			for(int y = 0; y < TABLE_HEIGHT- 1; y++) {
+				int xVal = x;
+				int yVal = y * (TABLE_WIDTH - 1);
+				char c = (char)(xVal + yVal + base);
+				displayArr[x+1][y+1] = "" + c;
+			}
+			
+		updateField();	
 		this.repaint();
 	}
-	
-	
-	public void getJumpDestination()
-	{
-		try
-		{
+		
+	public void getJumpDestination() {
+		try {
 			String value = JOptionPane.showInputDialog("Enter value (0 - 65535):");
 			base = Integer.parseInt(value);
 		}
 		catch(NumberFormatException nfEx){}
 	}
 
-	public void exportPNG()
-	{
+	public void exportPNG() {
+		String fontName = fontNames[fontDD.getSelectedIndex()];
+		exportDialog.setFontName(fontName);
 		exportDialog.setLocationRelativeTo(this);
 		exportDialog.setVisible(true);
 	}
 	
-	public void paint(Graphics g)
-	{
+	public void paint(Graphics g) {
 		super.paint(g);
 		lockedOutput = false;
 		String fontName = fontNames[fontDD.getSelectedIndex()];
@@ -213,16 +189,12 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		locL.setFont(new Font(fontName, Font.PLAIN, 12));
 		
 		for(int x = 1; x < TABLE_WIDTH; x++)
-		for(int y = 1; y < TABLE_HEIGHT; y++)
-		{
-			g.drawString(displayArr[x][y], OFFSET_X + (x * SPACING), 
-													 OFFSET_Y + (y * SPACING));
-		}
+			for(int y = 1; y < TABLE_HEIGHT; y++) {
+				g.drawString(displayArr[x][y], OFFSET_X + (x * SPACING), OFFSET_Y + (y * SPACING));
+			}
 	}
-	
-	
-	public static void main(String[] args)
-	{
+
+	public static void main(String[] args) {
 		CharLookup cl = new CharLookup();
 	}
 }

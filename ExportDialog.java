@@ -1,5 +1,8 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.beans.*; //property change stuff
+import java.io.File;
+import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -9,10 +12,13 @@ class ExportDialog extends JDialog implements ActionListener, PropertyChangeList
     private JOptionPane optionPane;
     private String btnString1 = "Enter";
     private String btnString2 = "Cancel";
+    
+    private String fontName;
 
     public ExportDialog(Frame aFrame) {
         super(aFrame, true);
 
+        /* Minimum width of 10 characters, maximum width of 80.  Default is 16. */
         SpinnerModel widthFieldModel = new SpinnerNumberModel(16, 10, 80, 1);
 		widthField = new JSpinner(widthFieldModel);
 
@@ -49,33 +55,33 @@ class ExportDialog extends JDialog implements ActionListener, PropertyChangeList
             optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
 
             if (btnString1.equals(value)) {
-			/*
-				typedText = textField.getText();
-                String ucText = typedText.toUpperCase();
-                if (magicWord.equals(ucText)) {
-                    //we're done; clear and dismiss the dialog
-                    clearAndHide();
-                } else {
-                    //text was invalid
-                    textField.selectAll();
-                    JOptionPane.showMessageDialog(
-                                    CustomDialog.this,
-                                    "Sorry, \"" + typedText + "\" "
-                                    + "isn't a valid response.\n"
-                                    + "Please enter "
-                                    + magicWord + ".",
-                                    "Try again",
-                                    JOptionPane.ERROR_MESSAGE);
-                    typedText = null;
-                    textField.requestFocusInWindow();
-                }  */
-				setVisible(false);
-            } else {
-				setVisible(false);
-            }
+            	Font font = new Font(fontName, Font.PLAIN, 12);
+            	FontMetrics fontMetrics = this.getFontMetrics(font);
+            	int charWidth = fontMetrics.charWidth(' ');
+            	int charHeight = fontMetrics.getHeight();
+            	int charsPerLine = (int)widthField.getValue();
+            	int imageWidth = charsPerLine * charWidth;
+            	int imageHeight = 16 * charHeight;
+        		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        		Graphics2D g2 = image.createGraphics();
+        		g2.setFont(font);
+        		char firstChar = ' ';
+        		for (char c = firstChar; c < 255; c++) {
+        			int x, y;
+        			x = ((c - firstChar) % charsPerLine) * charWidth;
+        			y = ((c - firstChar) / charsPerLine) * charHeight;
+        			g2.drawChars(new char[] { c }, 0, 1, x, y);
+        		}
+        		try {
+        		    File file = new File("fontx.png");
+        		    ImageIO.write(image, "png", file);
+        		} catch (IOException ioe) {}
+    		}
+			setVisible(false);
         }
 	}
+    
+    public void setFontName(String selectedFontName) {
+    	fontName = selectedFontName;
+    }
 }
-
-		/*BufferedImage image = new BufferedImage(100, 50, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2 = image.createGraphics();*/
