@@ -155,8 +155,7 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 				int xVal = x;
 				int yVal = y * (TABLE_WIDTH - 1);
 				char c = (char)(xVal + yVal + base);
-				if (Character.isDefined(c))
-					displayArr[x+1][y+1] = "" + c;
+				displayArr[x+1][y+1] = "" + c;
 			}
 			
 		updateField();	
