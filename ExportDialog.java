@@ -14,15 +14,25 @@ class ExportDialog extends JDialog implements ActionListener, PropertyChangeList
     private String btnString2 = "Cancel";
     
     private String fontName;
-
-    public ExportDialog(Frame aFrame) {
+    private int charWidth;
+    private int charHeight;
+    
+    public ExportDialog(Frame aFrame, String fontName_) {
         super(aFrame, true);
+
+    	fontName = fontName_;
+    	Font font = new Font(fontName, Font.PLAIN, 12);
+    	FontMetrics fontMetrics = this.getFontMetrics(font);
+    	charWidth = fontMetrics.getMaxAdvance();
+    	if (charWidth == -1)
+    		charWidth = fontMetrics.charWidth(' ');
+    	charHeight = fontMetrics.getHeight();
 
         /* Minimum width of 10 characters, maximum width of 80.  Default is 16. */
         SpinnerModel widthFieldModel = new SpinnerNumberModel(16, 10, 80, 1);
 		widthField = new JSpinner(widthFieldModel);
 
-        String msgString1 = "tcod font image generator?";
+        String msgString1 = String.format("Character size: %d x %d", charWidth, charHeight);
         Object[] array = {msgString1, widthField};
         Object[] options = {btnString1, btnString2};
 
@@ -55,22 +65,18 @@ class ExportDialog extends JDialog implements ActionListener, PropertyChangeList
             optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
 
             if (btnString1.equals(value)) {
-            	Font font = new Font(fontName, Font.PLAIN, 12);
-            	FontMetrics fontMetrics = this.getFontMetrics(font);
-            	int charWidth = fontMetrics.charWidth(' ');
-            	int charHeight = fontMetrics.getHeight();
             	int charsPerLine = (int)widthField.getValue();
             	int imageWidth = charsPerLine * charWidth;
             	int imageHeight = 16 * charHeight;
         		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
         		Graphics2D g2 = image.createGraphics();
-        		g2.setFont(font);
+        		g2.setFont(new Font(fontName, Font.PLAIN, 12));
         		char firstChar = ' ';
         		for (char c = firstChar; c < 255; c++) {
         			int x, y;
         			x = ((c - firstChar) % charsPerLine) * charWidth;
         			y = ((c - firstChar) / charsPerLine) * charHeight;
-        			g2.drawChars(new char[] { c }, 0, 1, x, y);
+        			g2.drawChars(new char[] { c }, 0, 1, x, y + charHeight);
         		}
         		try {
         		    File file = new File("fontx.png");
@@ -80,8 +86,4 @@ class ExportDialog extends JDialog implements ActionListener, PropertyChangeList
 			setVisible(false);
         }
 	}
-    
-    public void setFontName(String selectedFontName) {
-    	fontName = selectedFontName;
-    }
 }

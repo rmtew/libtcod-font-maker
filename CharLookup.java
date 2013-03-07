@@ -36,9 +36,6 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 	{
 		super();
 
-        exportDialog = new ExportDialog(this);
-        exportDialog.pack();
-
 		int fontIndex = 0;
 		setSize((TABLE_WIDTH * SPACING) + 190,
 				(TABLE_HEIGHT * SPACING) + 40);
@@ -175,8 +172,10 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 
 	public void exportPNG() {
 		String fontName = fontNames[fontDD.getSelectedIndex()];
-		exportDialog.setFontName(fontName);
-		exportDialog.setLocationRelativeTo(this);
+        exportDialog = new ExportDialog(this, fontName);
+        exportDialog.pack();
+
+        exportDialog.setLocationRelativeTo(this);
 		exportDialog.setVisible(true);
 	}
 	
