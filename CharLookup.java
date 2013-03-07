@@ -26,6 +26,7 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 	public static final int DEFAULT_FONT_SIZE = 17;
 	/* The colour of the underlying grid. */
 	public static final Color GRID_COLOUR = new Color(0.2f, 0.5f, 0.2f);
+	public static final Color GRID_SELECT_COLOUR = new Color(1.0f, 0.97f, 0.19f);
 
 	/* The base code point for the display table. */
 	public static int base = 0;
@@ -94,14 +95,18 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		outerPanel.add(displayPanel);
 
 		displayPanel.addMouseMotionListener(this);
-		
+
+		imageIcon = new ImageIcon();
+		imageIconLabel = new JLabel(imageIcon);
+		displayPanel.add(imageIconLabel);
+
 		/* Set up the control panel. */
 		controlPanel = new JPanel();
 		controlLayout = new BoxLayout(controlPanel, BoxLayout.Y_AXIS);
 		controlPanel.setLayout(controlLayout);	
 		controlPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		controlPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-		controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));		
+		controlPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));		
 		outerPanel.add(controlPanel);
 
 		int fontIndex = 0;
@@ -142,35 +147,35 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		codePointLabel.setMinimumSize(new Dimension(150, 20));
 		codePointLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		controlPanel.add(codePointLabel);
-		controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		controlPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
 		nextB = new JButton("Next " + displayed);
 		nextB.addActionListener(this);
 		nextB.setAlignmentX(Component.CENTER_ALIGNMENT);
 		nextB.setMinimumSize(new Dimension(150, 20));
 		controlPanel.add(nextB);
-		controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		controlPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		
 		prevB = new JButton("Previous " + displayed);
 		prevB.addActionListener(this);
 		prevB.setAlignmentX(Component.CENTER_ALIGNMENT);
 		prevB.setMinimumSize(new Dimension(150, 20));
 		controlPanel.add(prevB);
-		controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		controlPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		
 		jumpB = new JButton("Jump To");
 		jumpB.addActionListener(this);
 		jumpB.setAlignmentX(Component.CENTER_ALIGNMENT);
 		jumpB.setMinimumSize(new Dimension(150, 20));
 		controlPanel.add(jumpB);
-		controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		controlPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
 		exportB = new JButton("Export");
 		exportB.addActionListener(this);
 		exportB.setAlignmentX(Component.CENTER_ALIGNMENT);
 		exportB.setMinimumSize(new Dimension(150, 20));
 		controlPanel.add(exportB);
-		controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		controlPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		
 		locL = new JTextArea("");
 		locL.setEditable(false);
@@ -186,7 +191,7 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		creditL.setMinimumSize(new Dimension(150, 20));
 		creditL.setAlignmentX(Component.CENTER_ALIGNMENT);
 		controlPanel.add(creditL);
-		controlPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		controlPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
 		fontName = (String)fontDD.getSelectedItem();
 		fontSize = DEFAULT_FONT_SIZE;
@@ -236,10 +241,22 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 	public void mouseDragged(MouseEvent me){}
 
 	public void mouseMoved(MouseEvent me) {
+		drawCharOutline(mouseLocX, mouseLocY, GRID_COLOUR);
 		mouseLocX = (me.getX() - OFFSET_X) / (charWidth + GRID_MARGIN);
 		mouseLocY = (me.getY() - OFFSET_Y) / (charHeight + GRID_MARGIN);
+		drawCharOutline(mouseLocX, mouseLocY, GRID_SELECT_COLOUR);
 		
 		updateField();
+	}
+	
+	public void drawCharOutline(int x, int y, Color color) {
+		int cx = OFFSET_X + x * (charWidth + GRID_MARGIN);
+		int cy = OFFSET_Y + y * (charHeight + GRID_MARGIN);
+		Graphics2D g2 = bufferedImage.createGraphics();
+		g2.setColor(color);
+		g2.drawRect(cx-1, cy-1, charWidth+2, charHeight+2);		
+
+		repaint();
 	}
 
 	public void updateField() {
@@ -298,11 +315,16 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 		int imageWidth = (OFFSET_X * 2) + (charWidth * TABLE_WIDTH) + ((TABLE_WIDTH - 1) * GRID_MARGIN);
 		int imageHeight = (OFFSET_Y * 2) + (charHeight * TABLE_HEIGHT) + ((TABLE_HEIGHT - 1) * GRID_MARGIN);
 		bufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-		if (bufferedImage.getWidth() != imageWidth)
-			JOptionPane.showInputDialog(String.format("%d %d", bufferedImage.getWidth(), imageWidth));
+
 		Graphics2D g2 = bufferedImage.createGraphics();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+		g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);        		
+		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 		g2.setFont(font);
-		
 		for(int x = 0; x < TABLE_WIDTH; x++)
 			for(int y = 0; y < TABLE_HEIGHT; y++) {
 				int cx = OFFSET_X + x * (charWidth + GRID_MARGIN);
@@ -315,15 +337,9 @@ public class CharLookup extends JFrame implements ActionListener, ItemListener, 
 				g2.drawString(displayArr[x][y], cx, cy + charBaselineOffset);
 			}
 
-		if (imageIconLabel != null) {
-			displayPanel.remove(imageIconLabel);
-		}
-		imageIcon = new ImageIcon();
 		imageIcon.setImage(bufferedImage);
-		imageIconLabel = new JLabel(imageIcon);
-		displayPanel.add(imageIconLabel);
-		
-		displayPanel.setMinimumSize(new Dimension(imageWidth, imageHeight));
+		imageIconLabel.setSize(imageWidth, imageHeight);
+
 		pack();
 		repaint();
 	}
